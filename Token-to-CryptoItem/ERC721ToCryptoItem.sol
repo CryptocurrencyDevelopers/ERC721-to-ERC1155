@@ -10,10 +10,13 @@ contract ERC721ToCryptoItem {
     address public erc1155ContractAddress = 0x0;
     uint256 public erc721BurnAddress = 0x0000000000000000000000000000000000000000; // This can optionally be replaced with a smart contract address or recipient address if burning is not desired
     uint256 public erc1155BaseId = 0x0;
+    address public previousCreator = 0x0;
 
     event Convert(uint256 indexed _srcId, address indexed _destId);
 
     function convert(uint256 _srcId) external returns (uint256 destId) {
+        if(previousCreator == 0x0) revert("Inactive");
+
         // Transfer the ERC-721 token to the burn address
         ERC721 erc721Contract = ERC721(erc721ContractAddress);
         erc721Contract.transferFrom(msg.sender, erc721BurnAddress, _srcId);
@@ -26,6 +29,13 @@ contract ERC721ToCryptoItem {
         emit Convert(_srcId, destId);
     }
 
-    // @todo: function acceptAssignment
-    // @todo: function transferAssignment
+    function acceptAssignment() external {
+
+        previousCreator = msg.sender;
+    }
+
+    function assign() external {
+
+        previousCreator = 0x0;
+    }
 }
