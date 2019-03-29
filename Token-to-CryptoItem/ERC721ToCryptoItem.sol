@@ -6,13 +6,13 @@ import "./ICryptoItems.sol";
 contract ERC721ToCryptoItem {
 
     bool public active = false;
-    address public originalCreator = 0x0;
+    address public originalCreator = address(0);
     address public erc721ContractAddress;
     address public erc1155ContractAddress;
     uint256 public erc1155BaseId;
 
     // The burn address can be replaced with a real address if burning is not desired
-    uint256 public erc721BurnAddress = 0x0000000000000000000000000000000000000000;
+    address public erc721BurnAddress = 0x0000000000000000000000000000000000000000;
 
     // Equals to `bytes4(keccak256("onERC721Received(address,address,uint256,bytes)"))`
     bytes4 constant private ERC721_RECEIVED = 0x150b7a02;
@@ -24,7 +24,7 @@ contract ERC721ToCryptoItem {
         _;
     }
 
-    constructor(address memory _erc721ContractAddress, address memory _erc1155ContractAddress) public {
+    constructor(address _erc721ContractAddress, address _erc1155ContractAddress) public {
         erc721ContractAddress = _erc721ContractAddress;
         erc1155ContractAddress = _erc1155ContractAddress;
     }
@@ -32,7 +32,7 @@ contract ERC721ToCryptoItem {
     /*
      * Burn the incoming ERC-721 token and mint an ERC-1155 token to the sender
      */
-    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes _data) external returns(bytes4) {
+    function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes calldata _data) external returns(bytes4) {
         if(!active) revert("Inactive");
 
         // Transfer the ERC-721 token to the burn address
@@ -41,12 +41,15 @@ contract ERC721ToCryptoItem {
         // This will revert if the token wasn't actually transferred over
         // Note: If an unsafe transfer function was used, this is vulnerable to an attacker executing onERC721Received and claiming the ERC-1155 token
         // This shouldn't happen under typical circumstances, though
-        erc721Contract.transferFrom(this, erc721BurnAddress, _tokenId);
+        erc721Contract.transferFrom(address(this), erc721BurnAddress, _tokenId);
 
 
         // Mint the ERC-1155 token to the sender's address
         ICryptoItems erc1155Contract = ICryptoItems(erc1155ContractAddress);
-        erc1155Contract.mintNonFungible(erc1155BaseId, _from);
+
+        address[] memory fromAddresses = new address[](1);
+        fromAddresses[0] = _from;
+        erc1155Contract.mintNonFungibles(erc1155BaseId, fromAddresses);
 
         // Emit event signifying completion
         emit Burn(_from, _tokenId);
@@ -59,10 +62,10 @@ contract ERC721ToCryptoItem {
      */
     function transferToken(uint256 _tokenId, address _to) public originalCreatorOnly {
         ERC721 erc721Contract = ERC721(erc721ContractAddress);
-        erc721Contract.transferFrom(this, _to, _tokenId);
+        erc721Contract.transferFrom(address(this), _to, _tokenId);
     }
 
-    function acceptAssignment(_id) external {
+    function acceptAssignment(uint256 _id) external {
         ICryptoItems erc1155Contract = ICryptoItems(erc1155ContractAddress);
         erc1155Contract.acceptAssignment(_id);
 
@@ -75,7 +78,7 @@ contract ERC721ToCryptoItem {
         ICryptoItems erc1155Contract = ICryptoItems(erc1155ContractAddress);
         erc1155Contract.assign(erc1155BaseId, originalCreator);
 
-        originalCreator = 0x0;
+        originalCreator = address(0);
         active = false;
     }
 }
