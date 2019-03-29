@@ -57,7 +57,7 @@ contract ERC721ToCryptoItem {
     /*
      * If unsafe transfer was used to send the ERC-721 token, the originalCreator can send it back.
      */
-    function transferToken(uint256 _tokenId, address _to) originalCreatorOnly {
+    function transferToken(uint256 _tokenId, address _to) public originalCreatorOnly {
         ERC721 erc721Contract = ERC721(erc721ContractAddress);
         erc721Contract.transferFrom(this, _to, _tokenId);
     }
