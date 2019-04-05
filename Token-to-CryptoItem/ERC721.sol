@@ -98,5 +98,5 @@ interface ERC721 /* is ERC165 */ {
     function isApprovedForAll(address _owner, address _operator) external view returns (bool);
 
     /// ERC721Metadata
-    function tokenURI(uint256 _tokenId) external view returns (string);
+    function tokenURI(uint256 _tokenId) external view returns (string memory);
 }
