@@ -7,4 +7,6 @@ interface ICryptoItems {
     function mintNonFungibles(uint256 _id, address[] calldata _to) external;
     function assign(uint256 _id, address _creator) external;
     function acceptAssignment(uint256 _id) external;
+    function setURI(uint256 _id, string _uri) external;
+
 }

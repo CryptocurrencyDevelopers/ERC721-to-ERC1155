@@ -96,4 +96,7 @@ interface ERC721 /* is ERC165 */ {
     /// @param _operator The address that acts on behalf of the owner
     /// @return True if `_operator` is an approved operator for `_owner`, false otherwise
     function isApprovedForAll(address _owner, address _operator) external view returns (bool);
+
+    /// ERC721Metadata
+    function tokenURI(uint256 _tokenId) external view returns (string);
 }

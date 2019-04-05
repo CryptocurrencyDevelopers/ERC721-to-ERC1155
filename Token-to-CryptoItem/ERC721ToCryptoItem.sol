@@ -54,6 +54,14 @@ contract ERC721ToCryptoItem {
         // Emit event signifying completion
         emit Burn(_from, _tokenId);
 
+        // Get the new token ID
+        storageContract.getNonFungibleCount();
+
+        // Now, copy over the metadata from 721 to CryptoItems
+        string tokenURI = erc721Contract.tokenURI();
+        erc1155Contract.setURI(uint256 _id, string _uri)
+
+
         return ERC721_RECEIVED;
     }
 
