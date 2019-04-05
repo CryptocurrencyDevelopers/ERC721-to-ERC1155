@@ -8,8 +8,8 @@ contract ERC721ToCryptoItem {
     bool public active = false;
     address public originalCreator = address(0);
     address public erc721ContractAddress;
-    address public erc1155ContractAddress;
-    uint256 public erc1155BaseId;
+    address public cryptoItemsContractAddress;
+    uint256 public cryptoItemsBaseId;
 
     // The burn address can be replaced with a real address if burning is not desired
     address public erc721BurnAddress = 0x0000000000000000000000000000000000000000;
@@ -24,9 +24,9 @@ contract ERC721ToCryptoItem {
         _;
     }
 
-    constructor(address _erc721ContractAddress, address _erc1155ContractAddress) public {
+    constructor(address _erc721ContractAddress, address _cryptoItemsContractAddress) public {
         erc721ContractAddress = _erc721ContractAddress;
-        erc1155ContractAddress = _erc1155ContractAddress;
+        cryptoItemsContractAddress = _cryptoItemsContractAddress;
     }
 
     /*
@@ -45,22 +45,22 @@ contract ERC721ToCryptoItem {
 
 
         // Mint the ERC-1155 token to the sender's address
-        ICryptoItems erc1155Contract = ICryptoItems(erc1155ContractAddress);
+        ICryptoItems cryptoItemsContract = ICryptoItems(cryptoItemsContractAddress);
 
         address[] memory fromAddresses = new address[](1);
         fromAddresses[0] = _from;
-        erc1155Contract.mintNonFungibles(erc1155BaseId, fromAddresses);
+        cryptoItemsContract.mintNonFungibles(cryptoItemsBaseId, fromAddresses);
 
         // Emit event signifying completion
         emit Burn(_from, _tokenId);
 
         // Get the new token ID
-        uint256 index = erc1155Contract.nonFungibleCount(erc1155BaseId);
-        uint256 newTokenId = erc1155Contract.nonFungibleByIndex(erc1155BaseId, index);
+        uint256 index = cryptoItemsContract.nonFungibleCount(cryptoItemsBaseId);
+        uint256 newTokenId = cryptoItemsContract.nonFungibleByIndex(cryptoItemsBaseId, index);
 
         // Now, copy over the metadata from 721 to CryptoItems
         string memory tokenURI = erc721Contract.tokenURI(_tokenId);
-        erc1155Contract.setURI(newTokenId, tokenURI);
+        cryptoItemsContract.setURI(newTokenId, tokenURI);
 
         return ERC721_RECEIVED;
     }
@@ -74,17 +74,17 @@ contract ERC721ToCryptoItem {
     }
 
     function acceptAssignment(uint256 _id) external {
-        ICryptoItems erc1155Contract = ICryptoItems(erc1155ContractAddress);
-        erc1155Contract.acceptAssignment(_id);
+        ICryptoItems cryptoItemsContract = ICryptoItems(cryptoItemsContractAddress);
+        cryptoItemsContract.acceptAssignment(_id);
 
-        erc1155BaseId = _id;
+        cryptoItemsBaseId = _id;
         originalCreator = msg.sender;
         active = true;
     }
 
     function assign() external originalCreatorOnly {
-        ICryptoItems erc1155Contract = ICryptoItems(erc1155ContractAddress);
-        erc1155Contract.assign(erc1155BaseId, originalCreator);
+        ICryptoItems cryptoItemsContract = ICryptoItems(cryptoItemsContractAddress);
+        cryptoItemsContract.assign(cryptoItemsBaseId, originalCreator);
 
         originalCreator = address(0);
         active = false;
