@@ -55,12 +55,12 @@ contract ERC721ToCryptoItem {
         emit Burn(_from, _tokenId);
 
         // Get the new token ID
-        storageContract.getNonFungibleCount();
+        uint256 index = erc1155Contract.nonFungibleCount(erc1155BaseId);
+        uint256 newTokenId = erc1155Contract.nonFungibleByIndex(erc1155BaseId, index);
 
         // Now, copy over the metadata from 721 to CryptoItems
         string tokenURI = erc721Contract.tokenURI();
-        erc1155Contract.setURI(uint256 _id, string _uri)
-
+        erc1155Contract.setURI(newTokenId, tokenURI);
 
         return ERC721_RECEIVED;
     }
