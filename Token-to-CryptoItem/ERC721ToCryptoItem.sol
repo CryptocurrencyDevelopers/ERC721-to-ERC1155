@@ -20,7 +20,7 @@ contract ERC721ToCryptoItem {
     event Burn(address indexed from, uint256 indexed tokenId);
 
     modifier originalCreatorOnly {
-        require(msg.sender == originalCreator);
+        require(msg.sender == originalCreator, "Must be the original creator of the item");
         _;
     }
 
@@ -34,6 +34,7 @@ contract ERC721ToCryptoItem {
      */
     function onERC721Received(address _operator, address _from, uint256 _tokenId, bytes calldata _data) external returns(bytes4) {
         if(!active) revert("Inactive");
+        require(msg.sender == erc721ContractAddress, "Only the ERC 721 contract may call this function");
 
         // Transfer the ERC-721 token to the burn address
         ERC721 erc721Contract = ERC721(erc721ContractAddress);
@@ -75,6 +76,10 @@ contract ERC721ToCryptoItem {
 
     function acceptAssignment(uint256 _id) external {
         ICryptoItems cryptoItemsContract = ICryptoItems(cryptoItemsContractAddress);
+
+        // Only allow the current item creator to call this function
+        require(cryptoItemsContract.isCreatorOf(_id, msg.sender), "Must be the current creator of the item");
+
         cryptoItemsContract.acceptAssignment(_id);
 
         cryptoItemsBaseId = _id;
